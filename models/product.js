@@ -1,12 +1,12 @@
 const { Schema, model } = require('mongoose');
 
-const ProductoSchema = Schema({
+const ProductSchema = Schema({
     name: {
         type: String,
         required: [true, 'name is required'],
         unique: true
     },
-    estado: {
+    status: {
         type: Boolean,
         default: true,
         required: true
@@ -31,10 +31,10 @@ const ProductoSchema = Schema({
 });
 
 
-ProductoSchema.methods.toJSON = function() {
-    const { __v, estado, ...data  } = this.toObject();
+ProductSchema.methods.toJSON = function() {
+    const { __v, status, ...data  } = this.toObject();
     return data;
 }
 
 
-module.exports = model( 'Producto', ProductoSchema );
+module.exports = model( 'Product', ProductSchema );

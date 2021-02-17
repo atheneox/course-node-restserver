@@ -36,14 +36,15 @@ router.post('/', [
     check('email', 'the email is not valid').isEmail(),
     check('email').custom(emailExists),
     // check('rol', 'No es un rol válido').isIn(['ADMIN_ROLE','USER_ROLE']),
+    // check('ADMIN_ROLE').custom(isRoleValid),
     check('rol').custom(isRoleValid),
     validateFields
 ], postUsers);
 
 router.delete('/:id', [
     validateJWT,
-    // isAdminRole,
-    hasRole('ADMIN_ROLE', 'VENTAR_ROLE', 'OTRO_ROLE'),
+    isAdminRole,
+    hasRole('ADMIN_ROLE', 'SELLER_ROLE'),
     check('id', 'Not a valid ID').isMongoId(),
     check('id').custom(userExistsById),
     validateFields

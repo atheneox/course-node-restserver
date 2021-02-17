@@ -11,11 +11,12 @@ const { User, Product } = require('../models');
 
 
 const loadFile = async (req, res = response) => {
-
     try {
 
         // txt, md
         // const nombre = await subirArchivo( req.files, ['txt','md'], 'textos' );
+        console.log("req.data", req.files.file.name);
+
         const name = await uploadFile(req.files, undefined, 'imgs');
         res.json({ name });
 
@@ -155,20 +156,25 @@ const showImage = async (req, res = response) => {
 
         default:
             return res.status(500).json({ msg: 'i forgot to validate this' });
-    }
 
+    }
 
     // Limpiar imágenes previas
     if (model.img) {
+
         // Hay que borrar la imagen del servidor
+        console.log("__dirname", __dirname);
         const pathImagen = path.join(__dirname, '../uploads', collection, model.img);
+        console.log(pathImagen);
         if (fs.existsSync(pathImagen)) {
-            return res.sendFile(pathImagen)
+            return res.sendFile(pathImagen);
         }
+
     }
 
     const pathImagen = path.join(__dirname, '../assets/no-image.jpg');
     res.sendFile(pathImagen);
+
 }
 
 module.exports = {

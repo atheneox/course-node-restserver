@@ -19,7 +19,6 @@ class Server {
             uploads: '/api/uploads',
         }
 
-
         // Conectar a base de datos
         this.dbConnect();
 
@@ -40,6 +39,7 @@ class Server {
         this.app.use(cors());
 
         // Lectura y parseo del body
+        // this.app.use(bodyParser.urlencoded({ extended: false }));
         this.app.use(express.json());
 
         // Directorio Público

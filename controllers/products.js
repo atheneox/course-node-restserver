@@ -1,4 +1,4 @@
-const { response } = require('express');
+const { response, json } = require('express');
 const { Product } = require('../models');
 
 
@@ -16,10 +16,18 @@ const getProducts = async (req, res = response) => {
             .limit(Number(limit))
     ]);
 
-    res.json({
-        total,
-        products
-    });
+    res.status(200).json(
+        {
+            status: {
+                code: 200,
+                msg: 'products found correctly'
+            },
+            body: {
+                total,
+                products
+            }
+        }
+    );
 
 }
 
@@ -30,23 +38,34 @@ const getProduct = async (req, res = response) => {
         .populate('user', 'name')
         .populate('category', 'name');
 
-    res.json(product);
+    res.status(200).json(
+        {
+            status: {
+                code: 200,
+                msg: 'product found correctly'
+            },
+            body: {
+                product
+            }
+        }
+    );
 
 }
 
 const createProduct = async (req, res = response) => {
 
     const { status, user, ...body } = req.body;
+    const name = req.body.name.toUpperCase();
 
-    const productDB = await Product.findOne({ name: body.name });
+    const productDB = await Product.findOne({ name });
 
     if (productDB) {
         return res.status(400).json({
-            msg: `product ${productoDB.name}, already exist`
+            code: 400,
+            msg: `product ${productDB.name}, already exist`
         });
     }
 
-    // Generar la data a guardar
     const data = {
         ...body,
         name: body.name.toUpperCase(),
@@ -55,10 +74,17 @@ const createProduct = async (req, res = response) => {
 
     const product = new Product(data);
 
-    // Guardar DB
     await product.save();
 
-    res.status(201).json(product);
+    res.status(201).json({
+        status: {
+            code: 201,
+            msg: 'product created succcessfully'
+        },
+        body: {
+            product
+        }
+    });
 
 }
 
@@ -67,24 +93,56 @@ const updateProduct = async (req, res = response) => {
     const { id } = req.params;
     const { status, user, ...data } = req.body;
 
-    if (data.user) {
-        data.user = data.user.toUpperCase();
+    if (user) {
+        data.user = user.toUpperCase();
     }
 
     data.user = req.user._id;
 
     const product = await Product.findByIdAndUpdate(id, data, { new: true });
 
-    res.json(product);
+    res.status(200).json(
+        {
+            status: {
+                code: 200,
+                msg: 'product updated successfully'
+            },
+            body: {
+                product
+            }
+        }
+    );
 
 }
 
 const deleteProduct = async (req, res = response) => {
 
     const { id } = req.params;
-    const deletedProduct = await Product.findByIdAndUpdate(id, { status: false }, { new: true });
 
-    res.json(deletedProduct);
+    const productExists = await Product.findOne({ _id: id, status: false });
+
+    if (productExists) {
+        res.status(404).json({
+            status: {
+                code: 404,
+                msg: 'product not found'
+            }
+        });
+    }
+
+    const product = await Product.findByIdAndUpdate(id, { status: false }, { new: true });
+
+    res.status(200).json(
+        {
+            status: {
+                code: 200,
+                msg: 'product removed successfully'
+            },
+            body: {
+                product
+            }
+        }
+    );
 
 }
 

@@ -1,9 +1,7 @@
 const { response, request } = require('express');
 const bcryptjs = require('bcryptjs');
 
-
 const User = require('../models/user');
-
 
 const getUsers = async (req = request, res = response) => {
 
@@ -17,10 +15,19 @@ const getUsers = async (req = request, res = response) => {
             .limit(Number(limit))
     ]);
 
-    res.json({
-        total,
-        users
-    });
+    res.status(200).json(
+        {
+            status: {
+                code: 200,
+                msg: 'users found correctly'
+            },
+            body: {
+                total,
+                users
+            }
+        }
+    );
+
 }
 
 const postUsers = async (req, res = response) => {
@@ -28,15 +35,19 @@ const postUsers = async (req, res = response) => {
     const { name, email, password, rol } = req.body;
     const user = new User({ name, email, password, rol });
 
-    // Encriptar la contraseña
     const salt = bcryptjs.genSaltSync();
     user.password = bcryptjs.hashSync(password, salt);
 
-    // Guardar en BD
     await user.save();
 
-    res.json({
-        user
+    res.status(201).json({
+        status: {
+            code: 201,
+            msg: 'user created successfully'
+        },
+        body: {
+            user
+        }
     });
 
 }
@@ -47,28 +58,61 @@ const putUsers = async (req, res = response) => {
     const { _id, password, google, email, ...rest } = req.body;
 
     if (password) {
-        // Encriptar la contraseña
         const salt = bcryptjs.genSaltSync();
         rest.password = bcryptjs.hashSync(password, salt);
     }
 
-    const user = await User.findByIdAndUpdate(id, rest);
+    const user = await User.findByIdAndUpdate(id, rest, { new: true });
 
-    res.json(user);
+    res.status(200).json({
+        status: {
+            code: 200,
+            msg: 'user updated successfully'
+        },
+        body: {
+            user
+        }
+    });
+
 }
 
 const patchUsers = (req, res = response) => {
     res.json({
-        msg: 'patch API - patchUsers'
+        status: {
+            code: 200,
+            msg: 'patch API - patchUsers'
+        }
     });
 }
 
 const deleteUsers = async (req, res = response) => {
 
     const { id } = req.params;
-    const user = await User.findByIdAndUpdate(id, { status: false });
 
-    res.json(user);
+    const userExists = await User.findOne({ _id: id, status: false });
+
+    if (userExists) {
+        res.status(404).json({
+            status: {
+                code: 404,
+                msg: 'user not found'
+            }
+        });
+    }
+
+    const user = await User.findByIdAndUpdate(id, { status: false }, { new: true });
+
+    res.status(200).json(
+        {
+            status: {
+                code: 200,
+                msg: 'user removed successfully'
+            },
+            body: {
+                user
+            }
+        }
+    );
 
 }
 

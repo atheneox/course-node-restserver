@@ -7,7 +7,7 @@ const uploadFile = (files, allowedExtension = ['png', 'jpg', 'jpeg', 'gif'], fol
     return new Promise((resolve, reject) => {
 
         const { fl } = files;
-        const cutName = file.name.split('.');
+        const cutName = fl.name.split('.');
         const extension = cutName[cutName.length - 1];
 
         // Validar la extension
@@ -17,13 +17,14 @@ const uploadFile = (files, allowedExtension = ['png', 'jpg', 'jpeg', 'gif'], fol
 
         const tempName = uuidv4() + '.' + extension;
         const uploadPath = path.join(__dirname, '../uploads/', folder, tempName);
-
+        console.log("uploadPath", uploadPath);
         fl.mv(uploadPath, (err) => {
             if (err) {
                 reject(err);
             }
 
             resolve(tempName);
+            console.log("tempName", tempName);
         });
 
     });

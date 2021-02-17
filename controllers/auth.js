@@ -10,7 +10,7 @@ const { googleVerify } = require('../helpers/google-verify');
 const login = async (req, res = response) => {
 
     const { email, password } = req.body;
-
+    console.log("token", email);
     try {
 
         // Verificar si el email existe
@@ -38,7 +38,8 @@ const login = async (req, res = response) => {
 
         // Generar el JWT
         const token = await generateJWT(user.id);
-
+        
+        // return;
         res.json({
             user,
             token
