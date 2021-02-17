@@ -1,19 +1,17 @@
 const { response } = require('express');
-const bcryptjs = require('bcryptjs')
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 
 const { generateJWT } = require('../helpers/generate-jwt');
 const { googleVerify } = require('../helpers/google-verify');
 
-
 const login = async (req, res = response) => {
 
     const { email, password } = req.body;
-    console.log("token", email);
     try {
 
-        // Verificar si el email existe
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({
@@ -21,14 +19,12 @@ const login = async (req, res = response) => {
             });
         }
 
-        // SI el usuario está activo
         if (!user.status) {
             return res.status(400).json({
                 msg: 'User / Password is not correct - status: false'
             });
         }
 
-        // Verificar la contraseña
         const validPassword = bcryptjs.compareSync(password, user.password);
         if (!validPassword) {
             return res.status(400).json({
@@ -36,14 +32,15 @@ const login = async (req, res = response) => {
             });
         }
 
-        // Generar el JWT
-        const token = await generateJWT(user.id);
-        
-        // return;
+        const body = generateJWT(user);
+
         res.json({
-            user,
-            token
-        })
+            status: {
+                code: 200,
+                msg: 'get token successfully'
+            },
+            body
+        });
 
     } catch (error) {
         console.log(error)
@@ -64,7 +61,7 @@ const googleSignin = async (req, res = response) => {
         let user = await User.findOne({ email });
 
         if (!user) {
-            // Tengo que crearlo
+
             const data = {
                 name,
                 email,
@@ -78,19 +75,20 @@ const googleSignin = async (req, res = response) => {
 
         }
 
-        // Si el usuario en DB
         if (!user.status) {
             return res.status(401).json({
                 msg: 'talk to the administrator, user blocked'
             });
         }
 
-        // Generar el JWT
-        const token = await generateJWT(user.id);
+        const body = generateJWT(user);
 
         res.json({
-            user,
-            token
+            status: {
+                code: 200,
+                msg: 'get token successfully'
+            },
+            body
         });
 
     } catch (error) {
@@ -103,8 +101,71 @@ const googleSignin = async (req, res = response) => {
 
 }
 
+const refresh = async (req, res = response) => {
+
+    const refresh_token = req.header('refresh_token');
+    const { id } = jwt.verify(refresh_token, process.env.SECRETORPRIVATEKEY);
+
+    try {
+
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(400).json({
+                msg: 'User / Password is not correct - email'
+            });
+        }
+
+        if (!user.status) {
+            return res.status(400).json({
+                msg: 'User / Password is not correct - status: false'
+            });
+        }
+
+        const body = generateJWT(user);
+
+        res.json({
+            status: {
+                code: 200,
+                msg: 'updated token'
+            },
+            body
+        });
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            msg: 'talk to the administrator'
+        });
+    }
+
+}
+
+const register = async (req, res = response) => {
+
+    const { name, email, password } = req.body;
+    const user = new User({ name, email, password });
+
+    const salt = bcryptjs.genSaltSync();
+    user.password = bcryptjs.hashSync(password, salt);
+
+    await user.save();
+
+    res.status(201).json({
+        status: {
+            code: 201,
+            msg: 'user created successfully'
+        },
+        body: {
+            user
+        }
+    });
+
+
+}
 
 module.exports = {
     login,
-    googleSignin
+    googleSignin,
+    refresh,
+    register
 }
