@@ -1,8 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-const fileUpload = require('express-fileupload');
-
-const { dbConnection } = require('../database/config');
+const express = require('express'),
+    cors = require('cors'),
+    fileUpload = require('express-fileupload'),
+    { dbConnection } = require('../database/config');
 
 class Server {
 
@@ -19,13 +18,10 @@ class Server {
             uploads: '/api/uploads',
         }
 
-        // Conectar a base de datos
         this.dbConnect();
 
-        // Middlewares
         this.middlewares();
 
-        // Rutas de mi aplicación
         this.routes();
     }
 
@@ -35,17 +31,12 @@ class Server {
 
     middlewares() {
 
-        // CORS
         this.app.use(cors());
 
-        // Lectura y parseo del body
-        // this.app.use(bodyParser.urlencoded({ extended: false }));
         this.app.use(express.json());
 
-        // Directorio Público
         this.app.use(express.static('public'));
 
-        // Fileupload - Carga de archivos
         this.app.use(fileUpload({
             useTempFiles: true,
             tempFileDir: '/tmp/',
@@ -67,7 +58,7 @@ class Server {
 
     listen() {
         this.app.listen(this.port, () => {
-            console.log('server running on port:', this.port);
+            console.log(`server running on port:`, this.port);
         });
     }
 

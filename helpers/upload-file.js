@@ -10,7 +10,6 @@ const uploadFile = (files, allowedExtension = ['png', 'jpg', 'jpeg', 'gif'], fol
         const cutName = fl.name.split('.');
         const extension = cutName[cutName.length - 1];
 
-        // Validar la extension
         if (!allowedExtension.includes(extension)) {
             return reject(`extension ${extension} is not allowed - ${allowedExtension}`);
         }

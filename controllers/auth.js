@@ -15,20 +15,29 @@ const login = async (req, res = response) => {
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({
-                msg: 'User / Password is not correct - email'
+                status: {
+                    code: 400,
+                    msg: 'User / Password is not correct - email'
+                }
             });
         }
 
         if (!user.status) {
             return res.status(400).json({
-                msg: 'User / Password is not correct - status: false'
+                status: {
+                    code: 400,
+                    msg: 'User / Password is not correct - status: false'
+                }
             });
         }
 
         const validPassword = bcryptjs.compareSync(password, user.password);
         if (!validPassword) {
             return res.status(400).json({
-                msg: 'User / Password is not correct - password'
+                status: {
+                    code: 400,
+                    msg: 'User / Password is not correct - password'
+                }
             });
         }
 
@@ -43,7 +52,6 @@ const login = async (req, res = response) => {
         });
 
     } catch (error) {
-        console.log(error)
         res.status(500).json({
             msg: 'talk to the administrator'
         });
@@ -132,7 +140,6 @@ const refresh = async (req, res = response) => {
         });
 
     } catch (error) {
-        console.log(error)
         res.status(500).json({
             msg: 'talk to the administrator'
         });
@@ -163,9 +170,34 @@ const register = async (req, res = response) => {
 
 }
 
+const changePassword = async (req, res = response) => {
+
+    const { new_password } = req.body;
+    const id = req.user.id;
+    const user = await User.findById(id);
+    const salt = bcryptjs.genSaltSync();
+    
+    user.password = bcryptjs.hashSync(new_password, salt);
+
+    await user.save();
+
+    res.status(201).json({
+        status: {
+            code: 201,
+            msg: 'password changed successfully'
+        },
+        body: {
+            user
+        }
+    });
+
+}
+
+
 module.exports = {
     login,
     googleSignin,
     refresh,
-    register
+    register,
+    changePassword
 }

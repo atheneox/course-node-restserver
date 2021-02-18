@@ -1,14 +1,11 @@
-const { Router } = require('express');
-const { check } = require('express-validator');
+const { Router } = require('express'),
+    { check } = require('express-validator'),
+    { emailExists } = require('../helpers/db-validators'),
+    { validateFields } = require('../middlewares/validate-fields'),
+    { validateRefreshToken, validateJWT } = require('../middlewares'),
+    { login, googleSignin, refresh, register, changePassword } = require('../controllers/auth'),
+    router = Router();
 
-const { validateFields } = require('../middlewares/validate-fields');
-const { emailExists} = require('../helpers/db-validators');
-
-const { login, googleSignin, refresh, register } = require('../controllers/auth');
-
-const { validateRefreshToken } = require('../middlewares');
-
-const router = Router();
 
 router.post('/login', [
     check('email', 'email is required').isEmail(),
@@ -21,7 +18,6 @@ router.post('/google', [
     validateFields
 ], googleSignin);
 
-
 router.post('/register', [
     check('email').custom(emailExists),
     check('email', 'email is required').isEmail(),
@@ -30,12 +26,13 @@ router.post('/register', [
     validateFields
 ], register);
 
-
 router.post('/refresh', [
     validateRefreshToken
-    // check('refresh_token', 'El id_token es necesario').not().isEmpty(),
-    // validateFields
 ], refresh);
+
+router.post('/changepassword', [
+    validateJWT
+], changePassword);
 
 
 module.exports = router;

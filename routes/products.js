@@ -1,17 +1,9 @@
-const { Router } = require('express');
-const { check } = require('express-validator');
-
-const { validateJWT, validateFields, isAdminRole } = require('../middlewares');
-
-const { createProduct,
-    getProducts,
-    getProduct,
-    updateProduct,
-    deleteProduct } = require('../controllers/products');
-
-const { categoryExistsById, productExistsById } = require('../helpers/db-validators');
-
-const router = Router();
+const { Router } = require('express'),
+    { check } = require('express-validator'),
+    { categoryExistsById, productExistsById } = require('../helpers/db-validators'),
+    { validateJWT, validateFields, isAdminRole } = require('../middlewares'),
+    { createProduct, getProducts, getProduct, updateProduct, deleteProduct } = require('../controllers/products'),
+    router = Router();
 
 router.get('/', [validateJWT], getProducts);
 
@@ -31,7 +23,6 @@ router.post('/', [
 
 router.put('/:id', [
     validateJWT,
-    // check('categoria','No es un id de Mongo').isMongoId(),
     check('id').custom(productExistsById),
     validateFields
 ], updateProduct);
